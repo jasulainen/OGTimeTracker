@@ -1,0 +1,377 @@
+// File System API detection and initialization
+let fileSystemSupported = false;
+let fileHandle = null;
+
+async function initFileSystem() {
+  if ('showSaveFilePicker' in window) {
+    fileSystemSupported = true;
+    // Try to get existing file handle from localStorage
+    const savedHandle = localStorage.getItem('fileHandle');
+    if (savedHandle) {
+      try {
+        fileHandle = JSON.parse(savedHandle);
+        // Verify file is still accessible
+        await fileHandle.getFile();
+      } catch (e) {
+        fileHandle = null;
+        localStorage.removeItem('fileHandle');
+      }
+    }
+  }
+}
+
+async function setupDataFile() {
+  if (!fileSystemSupported) return false;
+  
+  try {
+    const options = {
+      types: [{
+        description: 'TimeTracker History',
+        accept: { 'application/json': ['.json'] }
+      }],
+      suggestedName: 'timetracker-history.json'
+    };
+    
+    fileHandle = await window.showSaveFilePicker(options);
+    localStorage.setItem('fileHandle', JSON.stringify(fileHandle));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Mock API using localStorage with File System API integration
+const API = {
+    startTask: name => {
+      const now = Date.now();
+      const obj = { name, startTs: now, lastNotifTs: now };
+      localStorage.setItem('activeTask', JSON.stringify(obj));
+    },
+    getActive: () => JSON.parse(localStorage.getItem('activeTask')),
+    switchTask: async name => {
+      const current = API.getActive();
+      if (current) {
+        await API.saveToHistory(current);
+      }
+      API.startTask(name);
+    },
+    saveToHistory: async task => {
+      const now = Date.now();
+      const entry = {
+        name: task.name,
+        startTs: task.startTs,
+        endTs: now,
+        duration: now - task.startTs
+      };
+      const history = await API.getHistory();
+      history.push(entry);
+      await API.saveHistoryToFile(history);
+    },
+    getHistory: async () => {
+      if (fileSystemSupported && fileHandle) {
+        try {
+          const file = await fileHandle.getFile();
+          const content = await file.text();
+          return JSON.parse(content) || [];
+        } catch (e) {
+          // Fallback to localStorage if file read fails
+          return JSON.parse(localStorage.getItem('taskHistory')) || [];
+        }
+      }
+      return JSON.parse(localStorage.getItem('taskHistory')) || [];
+    },
+    saveHistoryToFile: async history => {
+      if (fileSystemSupported && fileHandle) {
+        try {
+          const writable = await fileHandle.createWritable();
+          await writable.write(JSON.stringify(history, null, 2));
+          await writable.close();
+          return true;
+        } catch (e) {
+          console.warn('File write failed, using localStorage:', e);
+        }
+      }
+      // Fallback to localStorage
+      localStorage.setItem('taskHistory', JSON.stringify(history));
+      return false;
+    },
+    clearHistory: async () => {
+      if (fileSystemSupported && fileHandle) {
+        try {
+          const writable = await fileHandle.createWritable();
+          await writable.write('[]');
+          await writable.close();
+        } catch (e) {
+          console.warn('File clear failed, using localStorage:', e);
+        }
+      }
+      localStorage.removeItem('taskHistory');
+    }
+  };
+  
+  // UI elements
+  const startBtn = document.getElementById('startBtn');
+  const switchBtn = document.getElementById('switchBtn');
+  const nameInput = document.getElementById('taskName');
+  const statusEl = document.getElementById('status');
+  const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+  const historyBody = document.getElementById('historyBody');
+  const setupFileBtn = document.getElementById('setupFileBtn');
+  const exportBtn = document.getElementById('exportBtn');
+  const importBtn = document.getElementById('importBtn');
+  const fileStatusEl = document.getElementById('fileStatus');
+  
+  startBtn.onclick = async () => {
+    const name = nameInput.value.trim();
+    if (!name) return alert('Enter task');
+    const current = API.getActive();
+    if (current) {
+      await API.saveToHistory(current);
+    }
+    API.startTask(name);
+    render();
+  };
+  switchBtn.onclick = () => doSwitch();
+  clearHistoryBtn.onclick = async () => {
+    await API.clearHistory();
+    await renderHistory();
+  };
+
+  setupFileBtn.onclick = async () => {
+    const success = await setupDataFile();
+    if (success) {
+      updateFileStatus();
+      alert('Data file set up successfully!');
+    } else {
+      alert('Failed to set up data file or cancelled by user');
+    }
+  };
+
+  exportBtn.onclick = async () => {
+    const history = await API.getHistory();
+    const data = JSON.stringify(history, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'timetracker-history.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  importBtn.onclick = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      try {
+        const text = await file.text();
+        const history = JSON.parse(text);
+        await API.saveHistoryToFile(history);
+        await renderHistory();
+        alert('History imported successfully!');
+      } catch (error) {
+        alert('Error importing file: ' + error.message);
+      }
+    };
+    input.click();
+  };
+
+  function updateFileStatus() {
+    if (fileSystemSupported && fileHandle) {
+      fileStatusEl.innerHTML = `
+        <div class="flex items-center space-x-2">
+          <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+          <span class="text-green-700 font-medium">Using file system storage</span>
+        </div>
+      `;
+      fileStatusEl.className = 'text-sm mb-4 p-3 rounded-lg bg-green-50 border-l-4 border-green-500';
+      setupFileBtn.textContent = '📁 Change Data File';
+    } else if (fileSystemSupported) {
+      fileStatusEl.innerHTML = `
+        <div class="flex items-center space-x-2">
+          <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+          <span class="text-yellow-700 font-medium">File system supported - click "Setup Data File" to enable</span>
+        </div>
+      `;
+      fileStatusEl.className = 'text-sm mb-4 p-3 rounded-lg bg-yellow-50 border-l-4 border-yellow-500';
+      setupFileBtn.textContent = '📁 Setup Data File';
+    } else {
+      fileStatusEl.innerHTML = `
+        <div class="flex items-center space-x-2">
+          <div class="w-2 h-2 bg-gray-500 rounded-full"></div>
+          <span class="text-gray-700 font-medium">Using browser storage (File System API not supported)</span>
+        </div>
+      `;
+      fileStatusEl.className = 'text-sm mb-4 p-3 rounded-lg bg-gray-50 border-l-4 border-gray-500';
+      setupFileBtn.style.display = 'none';
+    }
+  }
+  
+  // Render loop
+  async function render() {
+    const task = API.getActive();
+    if (!task) {
+      nameInput.style.display = '';
+      startBtn.style.display = '';
+      switchBtn.style.display = 'none';
+      statusEl.innerHTML = '';
+      await renderHistory();
+      return;
+    }
+    nameInput.style.display = 'none';
+    startBtn.style.display = 'none';
+    switchBtn.style.display = '';
+    
+    const elapsed = Math.floor((Date.now() - task.startTs) / 1000);
+    const formattedTime = formatDuration(elapsed * 1000);
+    
+    statusEl.innerHTML = `
+      <div class="bg-white rounded-xl card-shadow p-6 animate-fade-in">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-800">Currently Working On</h3>
+          <div class="flex items-center space-x-2">
+            <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <span class="text-sm font-medium text-green-600">Active</span>
+          </div>
+        </div>
+        
+        <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+              </div>
+              <div>
+                <p class="text-lg font-medium text-gray-900">${task.name}</p>
+                <p class="text-sm text-gray-500">Started at ${new Date(task.startTs).toLocaleTimeString()}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-2xl font-bold text-primary">${formattedTime}</p>
+              <p class="text-sm text-gray-500">elapsed</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+          <p class="text-sm text-yellow-800">
+            💡 <strong>Tip:</strong> You'll get a notification every minute to check if you're still working on this task
+          </p>
+        </div>
+      </div>
+    `;
+    
+    await renderHistory();
+  }
+
+  // History rendering
+  async function renderHistory() {
+    const history = await API.getHistory();
+    historyBody.innerHTML = '';
+    
+    if (history.length === 0) {
+      historyBody.innerHTML = `
+        <tr>
+          <td colspan="4" class="px-6 py-12 text-center text-gray-500">
+            <div class="flex flex-col items-center">
+              <svg class="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <p class="text-lg font-medium">No history yet</p>
+              <p class="text-sm">Start tracking your first task to see history here</p>
+            </div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+    
+    history.slice().reverse().forEach(entry => {
+      const row = document.createElement('tr');
+      row.className = 'table-row-hover transition-all duration-300';
+      
+      const startTime = new Date(entry.startTs).toLocaleString();
+      const endTime = new Date(entry.endTs).toLocaleString();
+      const duration = formatDuration(entry.duration);
+      
+      row.innerHTML = `
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="flex items-center">
+            <div class="w-2 h-2 bg-primary rounded-full mr-3"></div>
+            <span class="text-sm font-medium text-gray-900">${entry.name}</span>
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${startTime}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${endTime}</td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            ${duration}
+          </span>
+        </td>
+      `;
+      historyBody.appendChild(row);
+    });
+  }
+
+  function formatDuration(ms) {
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${seconds % 60}s`;
+    } else {
+      return `${seconds}s`;
+    }
+  }
+  
+  // Notification loop
+  async function initNotifications() {
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') return;
+    const reg = await navigator.serviceWorker.register('service-worker.js');
+  
+    setInterval(() => {
+      const task = API.getActive();
+      if (!task) return;
+      const now = Date.now();
+      // Change the interval from 30 minutes to 1 minute
+      if (now - task.lastNotifTs >= 60 * 1000) {
+        reg.showNotification(`Still working on “${task.name}?`, {
+          actions: [
+            { action: 'yes', title: 'Yes' },
+            { action: 'no', title: 'No' }
+          ],
+          tag: 'time-tracker'
+        });
+        task.lastNotifTs = now;
+        localStorage.setItem('activeTask', JSON.stringify(task));
+      }
+    }, 60 * 1000);
+  
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data.type === 'switch') doSwitch();
+    });
+  }
+  
+  async function doSwitch() {
+    const newName = prompt('What are you working on now?');
+    if (newName) await API.switchTask(newName);
+    render();
+  }
+  
+  window.addEventListener('load', async () => {
+    await initFileSystem();
+    updateFileStatus();
+    await render();
+    initNotifications();
+  });

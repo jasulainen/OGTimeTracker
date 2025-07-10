@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Use relative path and serve via HTTP -->
+  <link rel="manifest" href="manifest.json" />
+  <title>TimeTracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6',
+            secondary: '#6B7280',
+            accent: '#10B981',
+            warning: '#F59E0B',
+            danger: '#EF4444'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    body { 
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+    }
+    
+    .transition-all { transition: all 0.2s ease-in-out; }
+    .glass { backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.1); }
+    .card-shadow { 
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      transition: box-shadow 0.3s ease;
+    }
+    .card-shadow:hover { 
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    
+    .animate-fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-pulse-slow {
+      animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    button:active {
+      transform: scale(0.98);
+    }
+    
+    .table-row-hover:hover {
+      background: linear-gradient(90deg, #f8fafc 0%, #e2e8f0 100%);
+      transform: translateX(4px);
+    }
+    
+    /* Autocomplete Dropdown Styles */
+    .autocomplete-dropdown {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .autocomplete-item {
+      transition: background-color 0.15s ease-in-out;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+    }
+    
+    .autocomplete-item:hover {
+      background-color: #f3f4f6;
+    }
+    
+    .autocomplete-item.selected {
+      background-color: #dbeafe;
+      color: #1e40af;
+    }
+    
+    /* Date Navigation Styles */
+    .date-navigation {
+      border: 1px solid #e5e7eb;
+    }
+    
+    .date-navigation button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .date-navigation button:disabled:hover {
+      background-color: inherit;
+    }
+    
+    .daily-summary {
+      font-size: 0.875rem;
+    }
+    
+    /* Responsive date navigation */
+    @media (max-width: 640px) {
+      .date-navigation .flex {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .date-navigation .flex > div {
+        justify-content: center;
+        margin-bottom: 0.75rem;
+      }
+      
+      .date-navigation .daily-summary {
+        justify-content: center;
+        margin-bottom: 0;
+      }
+    }
+
+    /* Export dropdown styles */
+    .export-dropdown {
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    
+    .export-dropdown.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .export-dropdown.hide {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <div id="app" class="max-w-4xl mx-auto p-6">
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <div class="gradient-bg p-6 rounded-2xl text-white mb-6">
+        <h1 class="text-4xl font-bold mb-2">⏱️ TimeTracker</h1>
+        <p class="text-blue-100 text-lg">Smart time tracking with automatic notifications</p>
+      </div>
+      
+      <!-- Navigation Tabs -->
+      <div class="tab-navigation flex justify-center mb-6">
+        <button 
+          id="trackingTab" 
+          class="tab-button active px-6 py-3 bg-primary text-white rounded-l-lg hover:bg-blue-600 transition-all font-medium"
+        >
+          📊 Tracking
+        </button>
+        <button 
+          id="preferencesTab" 
+          class="tab-button px-6 py-3 bg-gray-200 text-gray-700 rounded-r-lg hover:bg-gray-300 transition-all font-medium"
+        >
+          ⚙️ Preferences
+        </button>
+      </div>
+    </header>
+
+    <!-- Tracking Tab Content -->
+    <div id="trackingContent" class="tab-content">
+      <!-- Main Controls -->
+      <div class="bg-white rounded-xl card-shadow p-6 mb-6">
+        <div id="controls" class="space-y-4">
+          <div class="flex flex-col sm:flex-row gap-4">
+            <div class="flex-1 relative">
+              <input 
+                type="text" 
+                id="taskName" 
+                placeholder="What are you working on?" 
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-lg"
+                autocomplete="off"
+              />
+              <div 
+                id="autocompleteDropdown" 
+                class="autocomplete-dropdown bg-white border border-gray-200 rounded-lg shadow-lg"
+                style="display: none; position: absolute; z-index: 1000;"
+              ></div>
+            </div>
+            <button 
+              id="startBtn"
+              class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all font-medium text-lg"
+            >
+              Start Tracking
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Display -->
+      <div id="status" class="mb-6"></div>
+
+      <!-- History Section -->
+      <div id="history" class="bg-white rounded-xl card-shadow p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4 sm:mb-0">📊 Time Tracking History</h2>
+        
+        <!-- File Controls -->
+        <div id="fileControls" class="flex flex-wrap gap-2">
+          <button 
+            id="setupFileBtn"
+            class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition-all font-medium text-sm"
+          >
+            📁 Setup Data File
+          </button>
+          <div class="relative inline-block">
+            <button 
+              id="exportDropdownBtn"
+              class="px-4 py-2 bg-accent text-white rounded-lg hover:bg-green-600 transition-all font-medium text-sm flex items-center gap-2"
+            >
+              📤 Export
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            <div 
+              id="exportDropdown"
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
+              style="display: none;"
+            >
+              <button 
+                id="exportJsonBtn"
+                class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg flex items-center gap-2"
+              >
+                📄 Export as JSON
+              </button>
+              <button 
+                id="exportCsvBtn"
+                class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-b-lg flex items-center gap-2"
+              >
+                📊 Export as CSV
+              </button>
+            </div>
+          </div>
+          <button 
+            id="importBtn"
+            class="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-gray-600 transition-all font-medium text-sm"
+          >
+            📥 Import
+          </button>
+          <button 
+            id="clearHistoryBtn"
+            class="px-4 py-2 bg-danger text-white rounded-lg hover:bg-red-600 transition-all font-medium text-sm"
+          >
+            🗑️ Clear
+          </button>
+        </div>
+      </div>
+      
+      <!-- File Status -->
+      <div id="fileStatus" class="text-sm mb-4 p-3 rounded-lg bg-gray-50 border-l-4 border-blue-500"></div>
+      
+      <!-- Date Navigation -->
+      <div class="date-navigation bg-gray-50 rounded-lg p-4 mb-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <button 
+              id="prevDateBtn"
+              class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all font-medium text-sm"
+            >
+              ← Previous
+            </button>
+            <input 
+              type="date" 
+              id="datePicker" 
+              class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm"
+            />
+            <button 
+              id="nextDateBtn"
+              class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all font-medium text-sm"
+            >
+              Next →
+            </button>
+            <button 
+              id="todayBtn"
+              class="px-3 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition-all font-medium text-sm"
+            >
+              Today
+            </button>
+          </div>
+          
+          <!-- Daily Summary -->
+          <div class="daily-summary flex items-center gap-4 text-sm">
+            <span class="text-gray-600">
+              <span id="selectedDateDisplay" class="font-medium">Today</span>
+            </span>
+            <span class="text-gray-600">
+              Total: <strong id="dailyTotal" class="text-gray-800">0h 0m</strong>
+            </span>
+            <span class="text-gray-600">
+              Tasks: <strong id="dailyTaskCount" class="text-gray-800">0</strong>
+            </span>
+          </div>
+        </div>
+      </div>
+      <!-- History Table -->
+      <div class="overflow-x-auto">
+        <table id="historyTable" class="w-full">
+          <thead>
+            <tr class="bg-gray-100 text-gray-700">
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Task</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Start Time</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">End Time</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Duration</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody" class="bg-white divide-y divide-gray-200">
+          </tbody>
+        </table>
+      </div>
+      </div>
+    </div>
+
+    <!-- Preferences Tab Content -->
+    <div id="preferencesContent" class="tab-content" style="display: none;">
+      <div class="bg-white rounded-xl card-shadow p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">⚙️ Preferences</h2>
+        
+        <!-- Notification Settings -->
+        <div class="preference-section mb-8">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">🔔 Notifications</h3>
+          <div class="preference-item bg-gray-50 p-4 rounded-lg">
+            <label for="notificationInterval" class="block text-sm font-medium text-gray-700 mb-2">
+              Notification Interval
+            </label>
+            <div class="flex items-center gap-4">
+              <input 
+                type="number" 
+                id="notificationInterval" 
+                min="1" 
+                max="360" 
+                class="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                value="1"
+              />
+              <span class="text-sm text-gray-600">minutes</span>
+              <span id="intervalDisplay" class="text-sm text-gray-500 italic">(1 minute)</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">
+              How often to ask if you're still working on the current task (1-360 minutes)
+            </p>
+          </div>
+        </div>
+
+        <!-- Future Settings Section -->
+        <div class="preference-section mb-8">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">🎨 Appearance</h3>
+          <div class="preference-item bg-gray-50 p-4 rounded-lg opacity-50">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Theme (Coming Soon)
+            </label>
+            <select disabled class="w-40 px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500">
+              <option>Light</option>
+              <option>Dark</option>
+              <option>Auto</option>
+            </select>
+            <p class="text-xs text-gray-500 mt-2">
+              Choose your preferred color scheme
+            </p>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="preference-actions flex flex-col sm:flex-row gap-4">
+          <button 
+            id="savePreferences"
+            class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 transition-all font-medium"
+          >
+            💾 Save Preferences
+          </button>
+          <button 
+            id="resetPreferences"
+            class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all font-medium"
+          >
+            🔄 Reset to Defaults
+          </button>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div id="preferencesMessage" class="mt-4 p-3 rounded-lg hidden">
+          <span id="preferencesMessageText"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="modules/app.js"></script>
+</body>
+</html>

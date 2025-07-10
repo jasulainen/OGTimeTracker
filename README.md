@@ -1,6 +1,7 @@
 # ⏱️ TimeTracker
 
 A smart Progressive Web App (PWA) for time tracking with automatic notifications and Excel-ready export functionality.
+If you wish to continue development, CLAUDE.md is included. This code base is produced in co-operation with Claude Code.
 
 ## 🌟 Features
 

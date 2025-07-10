@@ -28,7 +28,7 @@ A smart Progressive Web App (PWA) for time tracking with automatic notifications
 ## 🚀 Quick Start
 
 ### Option 1: Use Online (Recommended)
-*Deploy link will be available when hosted*
+Go https://timetracker.qkaasu.com/ and use it there. Note that this app does not store any data of yours to web site, but all the data is stored on your personal computer.
 
 ### Option 2: Local Development
 

@@ -142,6 +142,47 @@
       opacity: 0;
       transform: translateY(-10px);
     }
+    
+    /* Tab navigation styles for 3 tabs */
+    .tab-navigation {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .tab-button {
+      padding: 0.75rem 1.5rem;
+      font-medium;
+      transition: all 0.2s ease-in-out;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .tab-button:first-child {
+      border-top-left-radius: 0.5rem;
+      border-bottom-left-radius: 0.5rem;
+    }
+    
+    .tab-button:last-child {
+      border-top-right-radius: 0.5rem;
+      border-bottom-right-radius: 0.5rem;
+    }
+    
+    .tab-button:not(:first-child):not(:last-child) {
+      border-radius: 0;
+    }
+    
+    /* Responsive tab navigation */
+    @media (max-width: 640px) {
+      .tab-navigation {
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+      
+      .tab-button {
+        border-radius: 0.5rem !important;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen">
@@ -163,9 +204,15 @@
         </button>
         <button 
           id="preferencesTab" 
-          class="tab-button px-6 py-3 bg-gray-200 text-gray-700 rounded-r-lg hover:bg-gray-300 transition-all font-medium"
+          class="tab-button px-6 py-3 bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all font-medium"
         >
           ⚙️ Preferences
+        </button>
+        <button 
+          id="aboutTab" 
+          class="tab-button px-6 py-3 bg-gray-200 text-gray-700 rounded-r-lg hover:bg-gray-300 transition-all font-medium"
+        >
+          ℹ️ About
         </button>
       </div>
     </header>
@@ -391,6 +438,125 @@
         <!-- Success/Error Messages -->
         <div id="preferencesMessage" class="mt-4 p-3 rounded-lg hidden">
           <span id="preferencesMessageText"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- About Tab Content -->
+    <div id="aboutContent" class="tab-content" style="display: none;">
+      <div class="bg-white rounded-xl card-shadow p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">ℹ️ About TimeTracker</h2>
+        
+        <!-- App Description -->
+        <div class="about-section mb-8">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">📱 What is TimeTracker?</h3>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-gray-700 mb-3">
+              TimeTracker is a Progressive Web App (PWA) designed for simple, automatic time tracking. 
+              The core concept is that you don't need to remember to update your current task - the app 
+              automatically sends notifications asking if you're still working on the same thing.
+            </p>
+            <p class="text-gray-700">
+              Built with vanilla JavaScript and styled with Tailwind CSS, it features a modern, 
+              professional interface while running entirely in the browser.
+            </p>
+          </div>
+        </div>
+
+        <!-- Privacy & Data -->
+        <div class="about-section mb-8">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">🔒 Privacy & Data</h3>
+          <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+            <p class="text-gray-700 mb-3">
+              <strong>No Authentication Required:</strong> This app is built so that you don't need to 
+              authenticate anywhere because all your data stays on your own computer. There's no need 
+              for user management or logging in to anything.
+            </p>
+            <p class="text-gray-700">
+              Your time tracking data is stored locally using localStorage and optionally the File System API 
+              for direct file access. Your privacy is completely protected.
+            </p>
+          </div>
+        </div>
+
+        <!-- Development -->
+        <div class="about-section mb-8">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">👨‍💻 Development</h3>
+          <div class="bg-green-50 p-4 rounded-lg">
+            <p class="text-gray-700 mb-3">
+              <strong>Built for Personal Needs:</strong> This application was built for own needs and purposes, 
+              focusing on simplicity and effectiveness in time tracking.
+            </p>
+            <p class="text-gray-700 mb-3">
+              <strong>AI-Assisted Development:</strong> CLAUDE.md is included in the repository, as this project 
+              was developed with the help of Claude Code. You can continue using Claude as you please, and 
+              hopefully CLAUDE.md helps you develop this further easily.
+            </p>
+          </div>
+        </div>
+
+        <!-- Open Source -->
+        <div class="about-section mb-8">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">🌟 Open Source</h3>
+          <div class="bg-purple-50 p-4 rounded-lg">
+            <p class="text-gray-700 mb-3">
+              <strong>Free to Fork:</strong> You can freely fork this project on GitHub and continue 
+              working as you please.
+            </p>
+            <div class="flex items-center gap-3 mb-3">
+              <svg class="w-6 h-6 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+              </svg>
+              <a href="https://github.com/jasulainen/OGTimeTracker" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium">
+                https://github.com/jasulainen/OGTimeTracker
+              </a>
+            </div>
+            <p class="text-gray-700">
+              Feel free to contribute, modify, or adapt this project for your own needs.
+            </p>
+          </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="about-section mb-8">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">⚠️ Disclaimer</h3>
+          <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
+            <p class="text-gray-700 mb-3">
+              <strong>No Warranties:</strong> This software is provided "as is" without warranties of any kind, 
+              either express or implied. Use at your own risk.
+            </p>
+            <p class="text-gray-700">
+              <strong>Have Fun:</strong> This project was created with the spirit of learning and productivity. 
+              Enjoy using it and feel free to make it your own! 🎉
+            </p>
+          </div>
+        </div>
+
+        <!-- Technical Info -->
+        <div class="about-section">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">🔧 Technical Details</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h4 class="font-medium text-gray-800 mb-2">Built With</h4>
+              <ul class="text-sm text-gray-600 space-y-1">
+                <li>• Vanilla JavaScript (ES6 modules)</li>
+                <li>• Tailwind CSS</li>
+                <li>• Service Worker (PWA)</li>
+                <li>• File System API</li>
+                <li>• localStorage</li>
+              </ul>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h4 class="font-medium text-gray-800 mb-2">Features</h4>
+              <ul class="text-sm text-gray-600 space-y-1">
+                <li>• Automatic notifications</li>
+                <li>• Local data storage</li>
+                <li>• Export/Import (JSON/CSV)</li>
+                <li>• Date-based filtering</li>
+                <li>• Task autocomplete</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>

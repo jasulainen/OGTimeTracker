@@ -76,6 +76,7 @@ export class TimeTrackerApp {
     // Tab navigation events
     document.getElementById('trackingTab').onclick = () => this.showTab('tracking');
     document.getElementById('preferencesTab').onclick = () => this.showTab('preferences');
+    document.getElementById('aboutTab').onclick = () => this.showTab('about');
     
     // Enter key support for task input
     this.ui.elements.taskName.onkeypress = (e) => {
@@ -246,21 +247,33 @@ export class TimeTrackerApp {
     // Hide all tab contents
     const trackingContent = document.getElementById('trackingContent');
     const preferencesContent = document.getElementById('preferencesContent');
+    const aboutContent = document.getElementById('aboutContent');
     
     // Remove active class from all tab buttons
     const trackingTab = document.getElementById('trackingTab');
     const preferencesTab = document.getElementById('preferencesTab');
+    const aboutTab = document.getElementById('aboutTab');
     
+    // Hide all content first
+    trackingContent.style.display = 'none';
+    preferencesContent.style.display = 'none';
+    aboutContent.style.display = 'none';
+    
+    // Reset all tab buttons to inactive state
+    trackingTab.className = 'tab-button px-6 py-3 bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all font-medium';
+    preferencesTab.className = 'tab-button px-6 py-3 bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all font-medium';
+    aboutTab.className = 'tab-button px-6 py-3 bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all font-medium';
+    
+    // Show selected tab and activate button
     if (tabName === 'tracking') {
       trackingContent.style.display = '';
-      preferencesContent.style.display = 'none';
-      trackingTab.className = 'tab-button active px-6 py-3 bg-primary text-white rounded-l-lg hover:bg-blue-600 transition-all font-medium';
-      preferencesTab.className = 'tab-button px-6 py-3 bg-gray-200 text-gray-700 rounded-r-lg hover:bg-gray-300 transition-all font-medium';
+      trackingTab.className = 'tab-button active px-6 py-3 bg-primary text-white hover:bg-blue-600 transition-all font-medium';
     } else if (tabName === 'preferences') {
-      trackingContent.style.display = 'none';
       preferencesContent.style.display = '';
-      trackingTab.className = 'tab-button px-6 py-3 bg-gray-200 text-gray-700 rounded-l-lg hover:bg-gray-300 transition-all font-medium';
-      preferencesTab.className = 'tab-button active px-6 py-3 bg-primary text-white rounded-r-lg hover:bg-blue-600 transition-all font-medium';
+      preferencesTab.className = 'tab-button active px-6 py-3 bg-primary text-white hover:bg-blue-600 transition-all font-medium';
+    } else if (tabName === 'about') {
+      aboutContent.style.display = '';
+      aboutTab.className = 'tab-button active px-6 py-3 bg-primary text-white hover:bg-blue-600 transition-all font-medium';
     }
   }
 

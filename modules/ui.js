@@ -33,8 +33,10 @@ export class UIComponents {
       // Tab elements
       trackingTab: document.getElementById('trackingTab'),
       preferencesTab: document.getElementById('preferencesTab'),
+      aboutTab: document.getElementById('aboutTab'),
       trackingContent: document.getElementById('trackingContent'),
       preferencesContent: document.getElementById('preferencesContent'),
+      aboutContent: document.getElementById('aboutContent'),
       // Preferences elements
       notificationInterval: document.getElementById('notificationInterval'),
       intervalDisplay: document.getElementById('intervalDisplay'),

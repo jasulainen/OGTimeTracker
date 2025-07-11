@@ -1,0 +1,26 @@
+[
+  {
+    "id": "hist_test_001",
+    "taskId": "task_test_001",
+    "name": "Testing Import Feature",
+    "startTs": 1734624000000,
+    "endTs": 1734627600000,
+    "duration": 3600000
+  },
+  {
+    "id": "hist_test_002",
+    "taskId": "task_test_002",
+    "name": "Code Review",
+    "startTs": 1734627600000,
+    "endTs": 1734629400000,
+    "duration": 1800000
+  },
+  {
+    "id": "hist_test_003",
+    "taskId": "task_test_001",
+    "name": "Testing Import Feature",
+    "startTs": 1734629400000,
+    "endTs": 1734631200000,
+    "duration": 1800000
+  }
+]

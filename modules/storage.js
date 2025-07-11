@@ -246,6 +246,12 @@ export class StorageManager {
         throw new Error('File is too large. Maximum size is 10MB.');
       }
       
+      // Handle empty files
+      if (text.trim() === '') {
+        await this.saveHistory([]);
+        return true;
+      }
+      
       const history = JSON.parse(text);
       
       // Validate the imported data structure

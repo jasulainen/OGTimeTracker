@@ -93,4 +93,69 @@ export class Utils {
     
     return 'General';
   }
+
+  // HTML sanitization methods
+  static sanitizeHtml(input) {
+    if (!input || typeof input !== 'string') return '';
+    
+    // Create a temporary element to use browser's built-in HTML escaping
+    const temp = document.createElement('div');
+    temp.textContent = input;
+    return temp.innerHTML;
+  }
+
+  // Escape HTML characters manually (fallback method)
+  static escapeHtml(input) {
+    if (!input || typeof input !== 'string') return '';
+    
+    const entityMap = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+      '/': '&#x2F;'
+    };
+    
+    return input.replace(/[&<>"'\/]/g, (match) => entityMap[match]);
+  }
+
+  // Validate task name for security
+  static validateTaskNameSecure(name) {
+    if (!name || typeof name !== 'string') return false;
+    
+    const trimmedName = name.trim();
+    
+    // Check length (1-200 characters)
+    if (trimmedName.length === 0 || trimmedName.length > 200) return false;
+    
+    // Check for HTML tags or script content
+    const htmlTagPattern = /<[^>]*>/;
+    const scriptPattern = /(javascript:|data:|vbscript:|on\w+\s*=)/i;
+    
+    if (htmlTagPattern.test(trimmedName) || scriptPattern.test(trimmedName)) {
+      return false;
+    }
+    
+    return true;
+  }
+
+  // Create safe DOM element with text content
+  static createSafeElement(tagName, textContent, className = '') {
+    const element = document.createElement(tagName);
+    if (textContent) {
+      element.textContent = textContent;
+    }
+    if (className) {
+      element.className = className;
+    }
+    return element;
+  }
+
+  // Safely set inner HTML using sanitization
+  static setSafeInnerHTML(element, htmlContent) {
+    // For now, we'll convert to text content to prevent XSS
+    // In a production app, you'd want to use a proper HTML sanitizer like DOMPurify
+    element.textContent = htmlContent.replace(/<[^>]*>/g, '');
+  }
 }

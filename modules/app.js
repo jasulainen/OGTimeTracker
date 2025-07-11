@@ -7,6 +7,7 @@ import { UIComponents } from './ui.js';
 import { AutocompleteManager } from './autocomplete.js';
 import { DateFilter } from './dateFilter.js';
 import { PreferencesManager } from './preferences.js';
+import { Utils } from './utils.js';
 
 export class TimeTrackerApp {
   constructor() {
@@ -361,6 +362,12 @@ export class TimeTrackerApp {
       this.ui.showAlert('Please enter a task name');
       return;
     }
+    
+    // Client-side validation before sending to task manager
+    if (!Utils.validateTaskNameSecure(taskName)) {
+      this.ui.showAlert('Task name contains invalid characters or is too long. Please use only safe characters and keep it under 200 characters.');
+      return;
+    }
 
     try {
       await this.taskManager.startTask(taskName);
@@ -371,6 +378,12 @@ export class TimeTrackerApp {
   }
 
   async handleStartTaskWithId(taskName, taskId) {
+    // Client-side validation before sending to task manager
+    if (!Utils.validateTaskNameSecure(taskName)) {
+      this.ui.showAlert('Task name contains invalid characters or is too long. Please use only safe characters and keep it under 200 characters.');
+      return;
+    }
+    
     try {
       await this.taskManager.startTask(taskName, taskId);
       this.ui.clearTaskName();

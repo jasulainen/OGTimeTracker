@@ -1,4 +1,6 @@
 // UI Components Module - Handles all UI rendering and DOM manipulation
+import { Utils } from './utils.js';
+
 export class UIComponents {
   constructor() {
     this.elements = this.initializeElements();
@@ -71,62 +73,123 @@ export class UIComponents {
     const elapsed = Math.floor((Date.now() - task.startTs) / 1000);
     const formattedTime = this.formatDuration(elapsed * 1000);
     
-    this.elements.status.innerHTML = `
-      <div class="bg-white rounded-xl card-shadow p-6 animate-fade-in">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-gray-800">Currently Working On</h3>
-          <div class="flex items-center space-x-2">
-            <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            <span class="text-sm font-medium text-green-600">Active</span>
-          </div>
-        </div>
-        
-        <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-4">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                </svg>
-              </div>
-              <div>
-                <p class="text-lg font-medium text-gray-900">${task.name}</p>
-                <p class="text-sm text-gray-500">Started at ${new Date(task.startTs).toLocaleTimeString()}</p>
-              </div>
-            </div>
-            <div class="text-right">
-              <p id="elapsed-time" class="text-2xl font-bold text-primary">${formattedTime}</p>
-              <p class="text-sm text-gray-500">elapsed</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-          <p class="text-sm text-yellow-800">
-            💡 <strong>Tip:</strong> You'll get notifications asking if you're still working on this task (configurable in Preferences)
-          </p>
-        </div>
-        
-        <div class="flex justify-center">
-          <button 
-            id="stopBtn"
-            class="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all font-medium text-lg"
-          >
-            🛑 Stop Tracking
-          </button>
-        </div>
-      </div>
+    // Clear existing content
+    this.elements.status.innerHTML = '';
+    
+    // Create secure DOM structure
+    const container = document.createElement('div');
+    container.className = 'bg-white rounded-xl card-shadow p-6 animate-fade-in';
+    
+    // Header section
+    const header = document.createElement('div');
+    header.className = 'flex items-center justify-between mb-4';
+    
+    const headerTitle = document.createElement('h3');
+    headerTitle.className = 'text-lg font-semibold text-gray-800';
+    headerTitle.textContent = 'Currently Working On';
+    
+    const statusIndicator = document.createElement('div');
+    statusIndicator.className = 'flex items-center space-x-2';
+    
+    const statusDot = document.createElement('div');
+    statusDot.className = 'w-3 h-3 bg-green-500 rounded-full animate-pulse';
+    
+    const statusText = document.createElement('span');
+    statusText.className = 'text-sm font-medium text-green-600';
+    statusText.textContent = 'Active';
+    
+    statusIndicator.appendChild(statusDot);
+    statusIndicator.appendChild(statusText);
+    header.appendChild(headerTitle);
+    header.appendChild(statusIndicator);
+    
+    // Task info section
+    const taskInfo = document.createElement('div');
+    taskInfo.className = 'bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-4';
+    
+    const taskContainer = document.createElement('div');
+    taskContainer.className = 'flex items-center justify-between';
+    
+    const taskLeft = document.createElement('div');
+    taskLeft.className = 'flex items-center space-x-3';
+    
+    const taskIcon = document.createElement('div');
+    taskIcon.className = 'w-10 h-10 bg-primary rounded-full flex items-center justify-center';
+    taskIcon.innerHTML = `
+      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+      </svg>
     `;
     
+    const taskDetails = document.createElement('div');
+    
+    const taskName = document.createElement('p');
+    taskName.className = 'text-lg font-medium text-gray-900';
+    taskName.textContent = Utils.escapeHtml(task.name); // Secure task name display
+    
+    const taskStartTime = document.createElement('p');
+    taskStartTime.className = 'text-sm text-gray-500';
+    taskStartTime.textContent = `Started at ${new Date(task.startTs).toLocaleTimeString()}`;
+    
+    taskDetails.appendChild(taskName);
+    taskDetails.appendChild(taskStartTime);
+    
+    const timeDisplay = document.createElement('div');
+    timeDisplay.className = 'text-right';
+    
+    const elapsedTime = document.createElement('p');
+    elapsedTime.id = 'elapsed-time';
+    elapsedTime.className = 'text-2xl font-bold text-primary';
+    elapsedTime.textContent = formattedTime;
+    
+    const elapsedLabel = document.createElement('p');
+    elapsedLabel.className = 'text-sm text-gray-500';
+    elapsedLabel.textContent = 'elapsed';
+    
+    timeDisplay.appendChild(elapsedTime);
+    timeDisplay.appendChild(elapsedLabel);
+    
+    taskLeft.appendChild(taskIcon);
+    taskLeft.appendChild(taskDetails);
+    taskContainer.appendChild(taskLeft);
+    taskContainer.appendChild(timeDisplay);
+    taskInfo.appendChild(taskContainer);
+    
+    // Tip section
+    const tipSection = document.createElement('div');
+    tipSection.className = 'bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4';
+    
+    const tipText = document.createElement('p');
+    tipText.className = 'text-sm text-yellow-800';
+    tipText.innerHTML = `💡 <strong>Tip:</strong> You'll get notifications asking if you're still working on this task (configurable in Preferences)`;
+    
+    tipSection.appendChild(tipText);
+    
+    // Stop button section
+    const buttonSection = document.createElement('div');
+    buttonSection.className = 'flex justify-center';
+    
+    const stopBtn = document.createElement('button');
+    stopBtn.id = 'stopBtn';
+    stopBtn.className = 'px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all font-medium text-lg';
+    stopBtn.textContent = '🛑 Stop Tracking';
+    
     // Set up stop button event listener
-    const stopBtn = document.getElementById('stopBtn');
-    if (stopBtn) {
-      stopBtn.onclick = () => {
-        // Dispatch custom event to be handled by app controller
-        const stopEvent = new CustomEvent('stopTask');
-        document.dispatchEvent(stopEvent);
-      };
-    }
+    stopBtn.onclick = () => {
+      // Dispatch custom event to be handled by app controller
+      const stopEvent = new CustomEvent('stopTask');
+      document.dispatchEvent(stopEvent);
+    };
+    
+    buttonSection.appendChild(stopBtn);
+    
+    // Assemble everything
+    container.appendChild(header);
+    container.appendChild(taskInfo);
+    container.appendChild(tipSection);
+    container.appendChild(buttonSection);
+    
+    this.elements.status.appendChild(container);
   }
 
   updateActiveTaskTime(task) {
@@ -218,24 +281,56 @@ export class UIComponents {
         return; // Skip invalid entries
       }
 
-      row.innerHTML = `
-        <td class="px-6 py-4 whitespace-nowrap">
-          <div class="flex items-center">
-            <div class="w-2 h-2 bg-primary rounded-full mr-3"></div>
-            <div>
-              <span class="text-sm font-medium text-gray-900">${entry.name}</span>
-              <br><span class="text-xs text-gray-400">ID: ${entry.taskId.substring(0, 8)}...</span>
-            </div>
-          </div>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${startTime}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${endTime}</td>
-        <td class="px-6 py-4 whitespace-nowrap">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            ${duration}
-          </span>
-        </td>
-      `;
+      // Create secure table cells using DOM manipulation
+      const taskCell = document.createElement('td');
+      taskCell.className = 'px-6 py-4 whitespace-nowrap';
+      
+      const taskContainer = document.createElement('div');
+      taskContainer.className = 'flex items-center';
+      
+      const taskDot = document.createElement('div');
+      taskDot.className = 'w-2 h-2 bg-primary rounded-full mr-3';
+      
+      const taskInfo = document.createElement('div');
+      
+      const taskName = document.createElement('span');
+      taskName.className = 'text-sm font-medium text-gray-900';
+      taskName.textContent = Utils.escapeHtml(entry.name); // Secure task name display
+      
+      const taskId = document.createElement('span');
+      taskId.className = 'text-xs text-gray-400';
+      taskId.textContent = `ID: ${entry.taskId.substring(0, 8)}...`;
+      
+      const lineBreak = document.createElement('br');
+      
+      taskInfo.appendChild(taskName);
+      taskInfo.appendChild(lineBreak);
+      taskInfo.appendChild(taskId);
+      taskContainer.appendChild(taskDot);
+      taskContainer.appendChild(taskInfo);
+      taskCell.appendChild(taskContainer);
+      
+      const startTimeCell = document.createElement('td');
+      startTimeCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+      startTimeCell.textContent = startTime;
+      
+      const endTimeCell = document.createElement('td');
+      endTimeCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+      endTimeCell.textContent = endTime;
+      
+      const durationCell = document.createElement('td');
+      durationCell.className = 'px-6 py-4 whitespace-nowrap';
+      
+      const durationBadge = document.createElement('span');
+      durationBadge.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800';
+      durationBadge.textContent = duration;
+      
+      durationCell.appendChild(durationBadge);
+      
+      row.appendChild(taskCell);
+      row.appendChild(startTimeCell);
+      row.appendChild(endTimeCell);
+      row.appendChild(durationCell);
       this.elements.historyBody.appendChild(row);
     });
   }

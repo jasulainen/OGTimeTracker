@@ -240,12 +240,56 @@ export class StorageManager {
   async importHistory(file) {
     try {
       const text = await file.text();
+      
+      // Basic size check to prevent DoS
+      if (text.length > 10 * 1024 * 1024) { // 10MB limit
+        throw new Error('File is too large. Maximum size is 10MB.');
+      }
+      
       const history = JSON.parse(text);
+      
+      // Validate the imported data structure
+      if (!Array.isArray(history)) {
+        throw new Error('Invalid data format: expected an array of history entries');
+      }
+      
+      // Validate each entry
+      for (const entry of history) {
+        if (!this.validateHistoryEntry(entry)) {
+          throw new Error('Invalid history entry found in import data');
+        }
+      }
+      
       await this.saveHistory(history);
       return true;
     } catch (error) {
       throw new Error('Invalid file format: ' + error.message);
     }
+  }
+
+  validateHistoryEntry(entry) {
+    // Check required fields
+    if (!entry || typeof entry !== 'object') return false;
+    if (!entry.id || typeof entry.id !== 'string') return false;
+    if (!entry.name || typeof entry.name !== 'string') return false;
+    if (!entry.startTs || typeof entry.startTs !== 'number') return false;
+    if (!entry.endTs || typeof entry.endTs !== 'number') return false;
+    if (!entry.duration || typeof entry.duration !== 'number') return false;
+    
+    // Validate task name security
+    if (!Utils.validateTaskNameSecure(entry.name)) return false;
+    
+    // Validate timestamps
+    if (entry.startTs < 0 || entry.endTs < 0) return false;
+    if (entry.startTs > entry.endTs) return false;
+    if (entry.duration !== (entry.endTs - entry.startTs)) return false;
+    
+    // Validate reasonable time ranges (not in future, not too far in past)
+    const now = Date.now();
+    const oneYearAgo = now - (365 * 24 * 60 * 60 * 1000);
+    if (entry.endTs > now || entry.startTs < oneYearAgo) return false;
+    
+    return true;
   }
 
   // Status information

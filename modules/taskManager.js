@@ -13,6 +13,11 @@ export class TaskManager {
     if (!Utils.validateTaskName(taskName)) {
       throw new Error('Task name is required');
     }
+    
+    // Additional security validation
+    if (!Utils.validateTaskNameSecure(taskName)) {
+      throw new Error('Task name contains invalid characters or is too long. Please use only safe characters and keep it under 200 characters.');
+    }
 
     // Save current task to history if exists
     const currentTask = this.state.getCurrentTask();
@@ -46,6 +51,11 @@ export class TaskManager {
   async switchTask(newTaskName, taskId = null) {
     if (!Utils.validateTaskName(newTaskName)) {
       throw new Error('New task name is required');
+    }
+    
+    // Additional security validation
+    if (!Utils.validateTaskNameSecure(newTaskName)) {
+      throw new Error('Task name contains invalid characters or is too long. Please use only safe characters and keep it under 200 characters.');
     }
 
     await this.startTask(newTaskName, taskId);

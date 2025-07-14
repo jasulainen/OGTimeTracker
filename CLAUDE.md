@@ -19,6 +19,7 @@ Built with vanilla JavaScript and styled with Tailwind CSS, it features a modern
 - **File System Integration**: Chrome/Edge File System API for direct file persistence
 - **Observable State Management**: Simple reactive state pattern for UI updates
 - **Configurable Notification System**: Browser notifications at user-configurable intervals (1-360 minutes) asking "Still working on [task]?" - the core feature that eliminates manual task switching
+- **Git Version Control**: Uses git for source code management and collaboration
 
 ## Key Files
 
@@ -53,6 +54,31 @@ This project has no build system, package.json, or dependency management. To dev
 2. **Test PWA features**: Must be served over HTTPS or localhost for service worker and notifications to work
 
 3. **No linting/testing**: No automated testing or linting configured
+
+4. **Git workflow**: Common version control commands
+   ```bash
+   # Check repository status
+   git status
+   
+   # Add changes to staging
+   git add .
+   
+   # Commit changes
+   git commit -m "Description of changes"
+   
+   # Push to remote repository
+   git push origin main
+   
+   # Pull latest changes
+   git pull origin main
+   
+   # Create and switch to new branch
+   git checkout -b feature-branch-name
+   
+   # Switch between branches
+   git checkout main
+   git checkout feature-branch-name
+   ```
 
 ## Code Structure
 
@@ -160,6 +186,15 @@ When modifying this codebase:
 - Maintain localStorage fallback for browser compatibility
 - Use async/await for all storage operations due to File System API
 - Follow the established design system with consistent spacing and colors
+
+### Version Control Guidelines
+- **Commit frequently**: Make small, logical commits with descriptive messages
+- **Branch strategy**: Use feature branches for new features and bug fixes
+- **Commit messages**: Use clear, concise commit messages describing the change
+- **Code review**: Review changes before merging to main branch
+- **Data files**: The `app/timetracker-history.json` file contains user data and may have local modifications
+- **Service worker**: Update cache version in service worker when modifying cached files
+- **Testing**: Test changes locally before committing to ensure PWA functionality works
 
 ### Adding New Features
 1. **UI Changes**: Modify `modules/ui.js` for new UI components

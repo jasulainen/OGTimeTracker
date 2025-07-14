@@ -214,5 +214,29 @@
     "startTs": 1752129185712,
     "endTs": 1752129191704,
     "duration": 5992
+  },
+  {
+    "id": "hist_1752229328317_cjvykce9a",
+    "taskId": "task_1752222077220_hnvmwx5qk",
+    "name": "Foobar",
+    "startTs": 1752222121013,
+    "endTs": 1752229328317,
+    "duration": 7207304
+  },
+  {
+    "id": "hist_1752235477071_fbesc5v8n",
+    "taskId": "task_1752065067348_9bfpepcfq",
+    "name": "Something new",
+    "startTs": 1752229328693,
+    "endTs": 1752235477071,
+    "duration": 6148378
+  },
+  {
+    "id": "hist_1752483321706_ds6m6hg2f",
+    "taskId": "task_1752235484292_dewh794xd",
+    "name": "Vielä pitää jaksaa",
+    "startTs": 1752235484292,
+    "endTs": 1752483321706,
+    "duration": 247837414
   }
 ]

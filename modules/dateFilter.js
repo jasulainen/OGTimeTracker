@@ -1,4 +1,6 @@
 // Date Filter Module - Handles date-based filtering for history entries
+import { Utils } from './utils.js';
+
 export class DateFilter {
   constructor() {
     this.currentDate = new Date();
@@ -115,7 +117,7 @@ export class DateFilter {
     
     return {
       totalTime,
-      totalTimeFormatted: this.formatDuration(totalTime),
+      totalTimeFormatted: Utils.formatDurationCompact(totalTime),
       taskCount: dayEntries.length,
       uniqueTaskCount: uniqueTasks.size,
       entries: dayEntries
@@ -132,18 +134,7 @@ export class DateFilter {
     return this.getDailySummary(rangeEntries, null);
   }
 
-  // Format duration in hours and minutes
-  formatDuration(ms) {
-    const totalSeconds = Math.floor(ms / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    } else {
-      return `${minutes}m`;
-    }
-  }
+  // Duration formatting moved to Utils module
 
   // Check if date is today
   isToday(date) {

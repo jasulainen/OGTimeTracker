@@ -25,7 +25,7 @@ export class Utils {
       .replace(/^-+|-+$/g, '');
   }
 
-  // Format duration in a human-readable way
+  // Format duration in a human-readable way (full format with seconds)
   static formatDuration(ms) {
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -37,6 +37,19 @@ export class Utils {
       return `${minutes}m ${seconds % 60}s`;
     } else {
       return `${seconds}s`;
+    }
+  }
+
+  // Format duration in compact format (hours and minutes only)
+  static formatDurationCompact(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else {
+      return `${minutes}m`;
     }
   }
 
@@ -120,7 +133,7 @@ export class Utils {
     return input.replace(/[&<>"'\/]/g, (match) => entityMap[match]);
   }
 
-  // Validate task name for security
+  // Consolidated validation methods
   static validateTaskNameSecure(name) {
     if (!name || typeof name !== 'string') return false;
     
@@ -138,6 +151,68 @@ export class Utils {
     }
     
     return true;
+  }
+
+  // Validate notification interval
+  static validateNotificationInterval(minutes) {
+    const num = parseInt(minutes);
+    return !isNaN(num) && num >= 1 && num <= 360;
+  }
+
+  // Validate history entry structure
+  static validateHistoryEntry(entry) {
+    // Check required fields
+    if (!entry || typeof entry !== 'object') return false;
+    if (!entry.id || typeof entry.id !== 'string') return false;
+    if (!entry.name || typeof entry.name !== 'string') return false;
+    if (!entry.startTs || typeof entry.startTs !== 'number') return false;
+    if (!entry.endTs || typeof entry.endTs !== 'number') return false;
+    if (!entry.duration || typeof entry.duration !== 'number') return false;
+    
+    // Validate task name security
+    if (!this.validateTaskNameSecure(entry.name)) return false;
+    
+    // Validate timestamps
+    if (entry.startTs < 0 || entry.endTs < 0) return false;
+    if (entry.startTs > entry.endTs) return false;
+    if (entry.duration !== (entry.endTs - entry.startTs)) return false;
+    
+    // Validate reasonable time ranges (not in future, not too far in past)
+    const now = Date.now();
+    const oneYearAgo = now - (365 * 24 * 60 * 60 * 1000);
+    if (entry.endTs > now || entry.startTs < oneYearAgo) return false;
+    
+    return true;
+  }
+
+  // Validate file size for imports
+  static validateFileSize(text, maxSizeMB = 10) {
+    const maxBytes = maxSizeMB * 1024 * 1024;
+    return text.length <= maxBytes;
+  }
+
+  // Validate task structure (for active tasks)
+  static validateTaskStructure(task) {
+    if (!task || typeof task !== 'object') return false;
+    if (!task.id || typeof task.id !== 'string') return false;
+    if (!task.taskId || typeof task.taskId !== 'string') return false;
+    if (!task.name || typeof task.name !== 'string') return false;
+    if (!task.startTs || typeof task.startTs !== 'number') return false;
+    
+    // Validate task name security
+    if (!this.validateTaskNameSecure(task.name)) return false;
+    
+    return true;
+  }
+
+  // Validate message structure (for service worker communication)
+  static validateMessageStructure(message) {
+    return message && 
+           typeof message === 'object' && 
+           typeof message.type === 'string' &&
+           message.type.length > 0 &&
+           message.type.length <= 50 &&
+           /^[a-zA-Z_-]+$/.test(message.type);
   }
 
   // Create safe DOM element with text content

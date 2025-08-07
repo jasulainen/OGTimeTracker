@@ -1,4 +1,6 @@
 // Notification Service Module - Handles all notification-related functionality
+import { Utils } from './utils.js';
+
 export class NotificationService {
   constructor(taskManager, preferencesManager = null) {
     this.taskManager = taskManager;
@@ -45,8 +47,25 @@ export class NotificationService {
 
   setupMessageListener() {
     navigator.serviceWorker.addEventListener('message', (event) => {
-      if (event.data.type === 'switch') {
+      // Validate message structure
+      if (!event || !event.data || typeof event.data !== 'object') {
+        console.warn('Invalid service worker message received');
+        return;
+      }
+
+      const { data } = event;
+      
+      // Validate message structure using centralized validation
+      if (!Utils.validateMessageStructure(data)) {
+        console.warn('Invalid message structure from service worker:', data);
+        return;
+      }
+
+      // Handle validated message types
+      if (data.type === 'switch') {
         this.handleSwitchTaskRequest();
+      } else {
+        console.warn('Unknown message type from service worker:', data.type);
       }
     });
   }

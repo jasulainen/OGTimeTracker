@@ -72,8 +72,8 @@ export class UIComponents {
   }
 
   renderActiveTask(task) {
-    const elapsed = Math.floor((Date.now() - task.startTs) / 1000);
-    const formattedTime = this.formatDuration(elapsed * 1000);
+    const elapsed = Date.now() - task.startTs;
+    const formattedTime = Utils.formatDuration(elapsed);
     
     // Clear existing content
     this.elements.status.innerHTML = '';
@@ -117,11 +117,22 @@ export class UIComponents {
     
     const taskIcon = document.createElement('div');
     taskIcon.className = 'w-10 h-10 bg-primary rounded-full flex items-center justify-center';
-    taskIcon.innerHTML = `
-      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-      </svg>
-    `;
+    
+    // Create SVG element securely
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'w-5 h-5 text-white');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('d', 'M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2');
+    
+    svg.appendChild(path);
+    taskIcon.appendChild(svg);
     
     const taskDetails = document.createElement('div');
     
@@ -163,7 +174,16 @@ export class UIComponents {
     
     const tipText = document.createElement('p');
     tipText.className = 'text-sm text-yellow-800';
-    tipText.innerHTML = `💡 <strong>Tip:</strong> You'll get notifications asking if you're still working on this task (configurable in Preferences)`;
+    
+    // Create tip content securely
+    const tipIcon = document.createTextNode('💡 ');
+    const tipStrong = document.createElement('strong');
+    tipStrong.textContent = 'Tip:';
+    const tipMessage = document.createTextNode(' You\'ll get notifications asking if you\'re still working on this task (configurable in Preferences)');
+    
+    tipText.appendChild(tipIcon);
+    tipText.appendChild(tipStrong);
+    tipText.appendChild(tipMessage);
     
     tipSection.appendChild(tipText);
     
@@ -197,8 +217,8 @@ export class UIComponents {
   updateActiveTaskTime(task) {
     const timeElement = document.getElementById('elapsed-time');
     if (timeElement) {
-      const elapsed = Math.floor((Date.now() - task.startTs) / 1000);
-      const formattedTime = this.formatDuration(elapsed * 1000);
+      const elapsed = Date.now() - task.startTs;
+      const formattedTime = Utils.formatDuration(elapsed);
       timeElement.textContent = formattedTime;
     }
   }
@@ -207,34 +227,44 @@ export class UIComponents {
   renderFileStatus(storageStatus) {
     const { fileSystemSupported, fileHandleActive } = storageStatus;
 
+    // Clear existing content
+    this.elements.fileStatus.innerHTML = '';
+
+    // Create container div
+    const container = document.createElement('div');
+    container.className = 'flex items-center space-x-2';
+
+    // Create status dot
+    const statusDot = document.createElement('div');
+    statusDot.className = 'w-2 h-2 rounded-full';
+
+    // Create status text
+    const statusText = document.createElement('span');
+    statusText.className = 'font-medium';
+
     if (fileSystemSupported && fileHandleActive) {
-      this.elements.fileStatus.innerHTML = `
-        <div class="flex items-center space-x-2">
-          <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-          <span class="text-green-700 font-medium">Using file system storage</span>
-        </div>
-      `;
+      statusDot.classList.add('bg-green-500');
+      statusText.className += ' text-green-700';
+      statusText.textContent = 'Using file system storage';
       this.elements.fileStatus.className = 'text-sm mb-4 p-3 rounded-lg bg-green-50 border-l-4 border-green-500';
       this.elements.setupFileBtn.textContent = '📁 Change Data File';
     } else if (fileSystemSupported) {
-      this.elements.fileStatus.innerHTML = `
-        <div class="flex items-center space-x-2">
-          <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
-          <span class="text-yellow-700 font-medium">File system supported - click "Setup Data File" to enable</span>
-        </div>
-      `;
+      statusDot.classList.add('bg-yellow-500');
+      statusText.className += ' text-yellow-700';
+      statusText.textContent = 'File system supported - click "Setup Data File" to enable';
       this.elements.fileStatus.className = 'text-sm mb-4 p-3 rounded-lg bg-yellow-50 border-l-4 border-yellow-500';
       this.elements.setupFileBtn.textContent = '📁 Setup Data File';
     } else {
-      this.elements.fileStatus.innerHTML = `
-        <div class="flex items-center space-x-2">
-          <div class="w-2 h-2 bg-gray-500 rounded-full"></div>
-          <span class="text-gray-700 font-medium">Using browser storage (File System API not supported)</span>
-        </div>
-      `;
+      statusDot.classList.add('bg-gray-500');
+      statusText.className += ' text-gray-700';
+      statusText.textContent = 'Using browser storage (File System API not supported)';
       this.elements.fileStatus.className = 'text-sm mb-4 p-3 rounded-lg bg-gray-50 border-l-4 border-gray-500';
       this.elements.setupFileBtn.style.display = 'none';
     }
+
+    container.appendChild(statusDot);
+    container.appendChild(statusText);
+    this.elements.fileStatus.appendChild(container);
   }
 
   // History table rendering (now supports filtered entries)
@@ -250,19 +280,44 @@ export class UIComponents {
         ? 'Try selecting a different date or browse your history'
         : 'Start tracking your first task to see history here';
       
-      this.elements.historyBody.innerHTML = `
-        <tr>
-          <td colspan="4" class="px-6 py-12 text-center text-gray-500">
-            <div class="flex flex-col items-center">
-              <svg class="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <p class="text-lg font-medium">${emptyMessage}</p>
-              <p class="text-sm">${emptySubMessage}</p>
-            </div>
-          </td>
-        </tr>
-      `;
+      // Create empty state row securely
+      const row = document.createElement('tr');
+      const cell = document.createElement('td');
+      cell.setAttribute('colspan', '4');
+      cell.className = 'px-6 py-12 text-center text-gray-500';
+      
+      const container = document.createElement('div');
+      container.className = 'flex flex-col items-center';
+      
+      // Create SVG icon securely
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'w-16 h-16 mb-4 text-gray-300');
+      svg.setAttribute('fill', 'none');
+      svg.setAttribute('stroke', 'currentColor');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('stroke-linejoin', 'round');
+      path.setAttribute('stroke-width', '2');
+      path.setAttribute('d', 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z');
+      
+      svg.appendChild(path);
+      
+      const mainMessage = document.createElement('p');
+      mainMessage.className = 'text-lg font-medium';
+      mainMessage.textContent = emptyMessage;
+      
+      const subMessage = document.createElement('p');
+      subMessage.className = 'text-sm';
+      subMessage.textContent = emptySubMessage;
+      
+      container.appendChild(svg);
+      container.appendChild(mainMessage);
+      container.appendChild(subMessage);
+      cell.appendChild(container);
+      row.appendChild(cell);
+      this.elements.historyBody.appendChild(row);
       return;
     }
     
@@ -275,7 +330,7 @@ export class UIComponents {
       
       const startTime = new Date(entry.startTs).toLocaleString();
       const endTime = new Date(entry.endTs).toLocaleString();
-      const duration = this.formatDuration(entry.duration);
+      const duration = Utils.formatDuration(entry.duration);
       
       // Validate entry has required fields
       if (!entry.id || !entry.taskId || !entry.name) {
@@ -377,20 +432,7 @@ export class UIComponents {
     };
   }
 
-  // Utility methods
-  formatDuration(ms) {
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds % 60}s`;
-    } else {
-      return `${seconds}s`;
-    }
-  }
+  // Utility methods - duration formatting moved to Utils module
 
   // User feedback
   showAlert(message) {

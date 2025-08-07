@@ -1,0 +1,42 @@
+[
+  {
+    "id": "hist_1752065067348_example1",
+    "taskId": "task_1752065067348_project1",
+    "name": "Project Setup",
+    "startTs": 1752065067348,
+    "endTs": 1752065167348,
+    "duration": 100000
+  },
+  {
+    "id": "hist_1752065267348_example2",
+    "taskId": "task_1752065267348_development",
+    "name": "Feature Development",
+    "startTs": 1752065267348,
+    "endTs": 1752065567348,
+    "duration": 300000
+  },
+  {
+    "id": "hist_1752065567348_example3",
+    "taskId": "task_1752065567348_testing",
+    "name": "Testing & Debugging",
+    "startTs": 1752065567348,
+    "endTs": 1752065767348,
+    "duration": 200000
+  },
+  {
+    "id": "hist_1752065767348_example4",
+    "taskId": "task_1752065767348_documentation",
+    "name": "Documentation",
+    "startTs": 1752065767348,
+    "endTs": 1752065867348,
+    "duration": 100000
+  },
+  {
+    "id": "hist_1752065867348_example5",
+    "taskId": "task_1752065267348_development",
+    "name": "Feature Development",
+    "startTs": 1752065867348,
+    "endTs": 1752066167348,
+    "duration": 300000
+  }
+]

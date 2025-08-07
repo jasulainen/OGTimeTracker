@@ -38,8 +38,8 @@ export class TaskManager {
       lastNotifTs: now
     };
 
-    // Validate task structure
-    if (!newTask.id || !newTask.taskId || !newTask.name) {
+    // Validate task structure using centralized validation
+    if (!Utils.validateTaskStructure(newTask)) {
       throw new Error('Invalid task structure: missing required fields');
     }
 
@@ -65,8 +65,8 @@ export class TaskManager {
     const currentTask = this.state.getCurrentTask();
     if (!currentTask) return;
 
-    // Validate current task has required fields
-    if (!currentTask.id || !currentTask.taskId || !currentTask.name) {
+    // Validate current task structure
+    if (!Utils.validateTaskStructure(currentTask)) {
       throw new Error('Invalid current task: missing required fields');
     }
 

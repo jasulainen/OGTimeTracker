@@ -1,4 +1,6 @@
 // Preferences Module - Handles user settings and preferences
+import { Utils } from './utils.js';
+
 export class PreferencesManager {
   constructor() {
     this.defaultSettings = {
@@ -80,10 +82,9 @@ export class PreferencesManager {
     return this.getNotificationInterval() * 60 * 1000;
   }
 
-  // Validate notification interval
+  // Validate notification interval using centralized validation
   isValidNotificationInterval(minutes) {
-    const num = parseInt(minutes);
-    return !isNaN(num) && num >= 1 && num <= 360;
+    return Utils.validateNotificationInterval(minutes);
   }
 
   // Get formatted interval display

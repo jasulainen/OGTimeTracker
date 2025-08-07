@@ -39,24 +39,23 @@ Go https://timetracker.qkaasu.com/ and use it there. Note that this app does not
    cd timetracker
    ```
 
-2. **Start a local server**
+2. **Install dependencies** (for development tools)
    ```bash
-   # Using Python
-   python -m http.server 8888
-   
-   # Using Node.js
-   npx serve .
-   
-   # Using PHP
-   php -S localhost:8888
+   npm install
    ```
 
-3. **Open in browser**
-   ```
-   http://localhost:8888
+3. **Start development server**
+   ```bash
+   npm run serve          # HTTP server
+   npm run serve:https    # HTTPS server (required for PWA features)
    ```
 
-4. **Install as PWA** (Optional)
+4. **Open in browser**
+   ```
+   http://localhost:3000  # or https://localhost:5000 for HTTPS
+   ```
+
+5. **Install as PWA** (Optional)
    - Click the install button in your browser's address bar
    - Or use "Add to Home Screen" on mobile
 
@@ -83,17 +82,26 @@ timetracker/
 ├── manifest.json          # PWA manifest
 ├── service-worker.js       # Service worker for PWA
 ├── icon-192.png           # App icon
+├── package.json           # Development dependencies
+├── vite.config.js         # Test configuration
 ├── modules/
-│   ├── app.js             # Main application controller
+│   ├── app.js             # Main application controller (refactored)
 │   ├── storage.js         # File System API and localStorage
-│   ├── state.js           # State management
-│   ├── taskManager.js     # Business logic
-│   ├── notifications.js   # Notification service
-│   ├── ui.js              # UI components
+│   ├── state.js           # Observable state management
+│   ├── taskManager.js     # Core business logic
+│   ├── notifications.js   # PWA notification service
+│   ├── ui.js              # UI components (security-hardened)
 │   ├── preferences.js     # User preferences
-│   ├── utils.js           # Utility functions
-│   ├── dateFilter.js      # Date filtering
-│   └── autocomplete.js    # Task autocomplete
+│   ├── utils.js           # Utility functions (consolidated)
+│   ├── dateFilter.js      # Date filtering and navigation
+│   ├── autocomplete.js    # Task autocomplete system
+│   ├── tabController.js   # Tab navigation controller
+│   ├── preferencesController.js # Preferences management
+│   ├── fileController.js  # File operations controller
+│   └── dateNavigationController.js # Date navigation
+├── tests/
+│   ├── essential.test.js  # Security & validation tests
+│   └── setup.js           # Test configuration
 └── app/
     └── timetracker-history.json  # Sample data file
 ```
@@ -101,7 +109,9 @@ timetracker/
 ### Architecture
 - **Modular ES6**: Clean separation of concerns with ES6 modules
 - **No Build Process**: Direct JavaScript execution, no transpilation needed
-- **Observable State**: Reactive state management pattern
+- **Observable State**: Reactive state management pattern for UI updates
+- **Security-First**: XSS prevention and input validation throughout
+- **Controller Pattern**: Extracted UI controllers for better maintainability
 - **Progressive Enhancement**: Works offline with service worker caching
 
 ### Adding New Features
@@ -113,12 +123,14 @@ timetracker/
 5. **Integration**: Wire everything together in `modules/app.js`
 
 ### Key Development Guidelines
-- Use ES6 modules with import/export syntax
-- Follow the observable state pattern for UI updates
-- Use async/await for all storage operations
-- Maintain localStorage fallback compatibility
-- Test PWA features on localhost or HTTPS
-- Use Tailwind CSS classes for consistent styling
+- **Security First**: Validate all inputs and escape HTML content
+- **ES6 Modules**: Use import/export syntax for clean dependencies
+- **Observable State**: Follow reactive pattern for UI updates
+- **Async Storage**: Use async/await for all storage operations
+- **Browser Compatibility**: Maintain localStorage fallback
+- **Controller Pattern**: Extract complex UI logic to controller modules
+- **Testing**: Run security tests with `npm test`
+- **PWA Features**: Test on HTTPS for service worker functionality
 
 ## 🔧 Configuration
 
@@ -175,11 +187,16 @@ We welcome contributions! Here's how to get started:
 git clone https://github.com/yourusername/timetracker.git
 cd timetracker
 
-# Start development server
-python -m http.server 8888
+# Install development dependencies
+npm install
 
-# Make changes and test
-# Submit PR when ready
+# Run security tests
+npm test
+
+# Start development server
+npm run serve:https  # HTTPS for PWA features
+
+# Make changes, test, and submit PR
 ```
 
 ## 📄 License

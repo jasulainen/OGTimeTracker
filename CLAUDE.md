@@ -41,44 +41,26 @@ Built with vanilla JavaScript and styled with Tailwind CSS, it features a modern
 
 ## Development Commands
 
-This project has no build system, package.json, or dependency management. To develop:
+This project uses minimal tooling with focused testing for security validation:
 
 1. **Run locally**: Serve files via HTTP server (not file://)
    ```bash
-   # Example using Python
-   python -m http.server 8888
-   # Or using Node.js
-   npx serve .
+   npm run serve
+   # Or for HTTPS (required for PWA features)
+   npm run serve:https
    ```
 
-2. **Test PWA features**: Must be served over HTTPS or localhost for service worker and notifications to work
-
-3. **No linting/testing**: No automated testing or linting configured
-
-4. **Git workflow**: Common version control commands
+2. **Testing**: Essential security and validation tests
    ```bash
-   # Check repository status
-   git status
-   
-   # Add changes to staging
-   git add .
-   
-   # Commit changes
-   git commit -m "Description of changes"
-   
-   # Push to remote repository
-   git push origin main
-   
-   # Pull latest changes
-   git pull origin main
-   
-   # Create and switch to new branch
-   git checkout -b feature-branch-name
-   
-   # Switch between branches
-   git checkout main
-   git checkout feature-branch-name
+   npm test        # Run security validation tests
+   npm run test:watch  # Watch mode for development
    ```
+
+3. **Test PWA features**: Must be served over HTTPS or localhost for service worker and notifications to work
+
+4. **Git workflow**: Standard version control operations
+   - Use `git status`, `git add`, `git commit`, `git push` for basic operations
+   - Feature branches recommended for larger changes
 
 ## Code Structure
 
@@ -196,9 +178,54 @@ When modifying this codebase:
 - **Service worker**: Update cache version in service worker when modifying cached files
 - **Testing**: Test changes locally before committing to ensure PWA functionality works
 
+## Recent Improvements (2024)
+
+### Security & Architecture Refactoring
+- **XSS Prevention**: Comprehensive input validation and HTML escaping
+- **Service Worker Security**: Message validation and secure communication
+- **Modular Controllers**: Extracted UI logic into dedicated controller modules
+- **Code Consolidation**: Reduced main app.js from 568 to ~230 lines (60% reduction)
+- **Input Sanitization**: All user inputs properly validated and escaped
+
+### New Controller Modules
+- **tabController.js**: Tab navigation and switching logic
+- **preferencesController.js**: Settings management and validation  
+- **fileController.js**: Import/export operations and file handling
+- **dateNavigationController.js**: Date filtering and navigation controls
+
+### Testing Framework
+- **Security-Focused Tests**: Essential validation and XSS prevention tests
+- **Minimal Setup**: Streamlined testing without complex mocking
+- **Fast Execution**: 7 focused tests covering critical security functions
+- **Easy Maintenance**: Simple test structure avoiding brittle integration tests
+
 ### Adding New Features
 1. **UI Changes**: Modify `modules/ui.js` for new UI components
 2. **Business Logic**: Add methods to `modules/taskManager.js`
 3. **Storage**: Extend `modules/storage.js` for new data operations
 4. **State**: Add new state properties to `modules/state.js`
-5. **Integration**: Wire everything together in `modules/app.js`
+5. **Controllers**: Create new controller modules for complex UI logic
+6. **Testing**: Add security validation tests to `tests/essential.test.js`
+7. **Integration**: Wire everything together in `modules/app.js`
+
+## Development Best Practices
+
+### Security Guidelines
+- **Always validate inputs**: Use `Utils.validateTaskNameSecure()` for user inputs
+- **Escape HTML content**: Use `Utils.escapeHtml()` before DOM insertion  
+- **Validate service worker messages**: Check message structure and type
+- **File size limits**: Validate import file sizes to prevent memory issues
+- **Test security changes**: Run `npm test` to verify security validations
+
+### Architecture Guidelines
+- **Controller extraction**: Move complex UI logic to dedicated controller modules
+- **Observable state pattern**: Use state subscriptions for reactive UI updates
+- **Async storage operations**: Always use async/await for storage calls
+- **Error handling**: Provide meaningful error messages and graceful fallbacks
+- **Module boundaries**: Keep clear separation between UI, business logic, and storage
+
+### Testing Guidelines
+- **Focus on security**: Prioritize tests for XSS prevention and input validation
+- **Keep tests simple**: Avoid complex mocking that creates maintenance burden
+- **Test critical paths**: Cover essential business logic and security functions
+- **Fast feedback**: Maintain quick test execution for development workflow

@@ -23,21 +23,38 @@ Built with vanilla JavaScript and styled with Tailwind CSS, it features a modern
 
 ## Key Files
 
+### Core Application
 - `index.html`: Main application UI with task input, controls, and tab-based interface
-- `modules/app.js`: Main application controller and initialization
-- `modules/storage.js`: File System API and localStorage management with JSON/CSV export
-- `modules/state.js`: Application state management with observable pattern
-- `modules/taskManager.js`: Business logic for task operations and ID-based task registry
-- `modules/notifications.js`: Notification service with configurable intervals
-- `modules/ui.js`: UI components and DOM manipulation
-- `modules/preferences.js`: User preferences management (notification intervals, settings)
-- `modules/utils.js`: Utility functions for formatting, validation, and CSV generation
-- `modules/dateFilter.js`: Date-based filtering and navigation for history
-- `modules/autocomplete.js`: Task name autocomplete functionality
-- `app/timetracker-history.json`: Database of time tracking history as a JSON file
+- `modules/app.js`: Main application controller and initialization (refactored)
 - `service-worker.js`: PWA service worker for caching and notification click handling
 - `manifest.json`: PWA manifest for app metadata and icons
 - `icon-192.png`: App icon for PWA
+
+### Business Logic & State
+- `modules/taskManager.js`: Core business logic for task operations and ID-based registry
+- `modules/state.js`: Observable state management with reactive pattern
+- `modules/storage.js`: File System API and localStorage management with JSON/CSV export
+- `modules/notifications.js`: PWA notification service with configurable intervals
+
+### UI & Controllers (Post-Refactoring)
+- `modules/ui.js`: UI components and DOM manipulation (security-hardened)
+- `modules/tabController.js`: Tab navigation and switching logic
+- `modules/preferencesController.js`: Settings management and validation
+- `modules/fileController.js`: Import/export operations and file handling
+- `modules/dateNavigationController.js`: Date filtering and navigation controls
+
+### Utilities & Features
+- `modules/utils.js`: Consolidated utility functions with security validation
+- `modules/preferences.js`: User preferences persistence and defaults
+- `modules/dateFilter.js`: Date-based filtering and navigation for history
+- `modules/autocomplete.js`: Task name autocomplete functionality
+
+### Data & Testing
+- `app/timetracker-history.json`: Database of time tracking history as JSON file
+- `tests/essential.test.js`: Security validation and essential business logic tests
+- `tests/setup.js`: Minimal test configuration
+- `package.json`: Development dependencies and npm scripts
+- `vite.config.js`: Test framework configuration
 
 ## Development Commands
 
